@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rule Evaluation</title>
+    <style>
+        /* General reset for consistency across browsers */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Basic styling for the body */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* Styling for the container */
+        .container {
+            background-color: white;
+            width: 450px;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 28px;
+            color: #040d38;
+            margin-bottom: 30px;
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+            font-size: 14px;
+            color: #555;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus {
+            border-color: #040d38;
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #040d38;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #040d38;
+        }
+
+
+        #result {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* Responsive design */
+        @media (max-width: 480px) {
+            .container {
+                width: 100%;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Evaluate Eligibility</h1>
+        <form id="ruleForm">
+            <label for="ruleString">Rule String:</label>
+            <input type="text" id="ruleString" name="ruleString" placeholder="Enter rule string">
+
+            <label for="age">Age:</label>
+            <input type="number" id="age" name="age" placeholder="Enter age">
+
+            <label for="department">Department:</label>
+            <input type="text" id="department" name="department" placeholder="Enter department">
+
+            <label for="salary">Salary:</label>
+            <input type="number" id="salary" name="salary" placeholder="Enter salary">
+
+            <label for="experience">Experience:</label>
+            <input type="number" id="experience" name="experience" placeholder="Enter experience">
+
+            <button type="submit">Evaluate Rule</button>
+        </form>
+        <h2 id="result"></h2>
+    </div>
+
+    <script>
+        document.getElementById("ruleForm").addEventListener("submit", async function(event) {
+            event.preventDefault(); // Prevent form from submitting normally
+
+            // Collect form data
+            const ruleString = document.getElementById("ruleString").value;
+            const age = document.getElementById("age").value;
+            const department = document.getElementById("department").value;
+            const salary = document.getElementById("salary").value;
+            const experience = document.getElementById("experience").value;
+
+            // Log the data for debugging
+            console.log("Rule String:", ruleString);
+            console.log("User Data:", { age, department, salary, experience });
+
+            // Send data to the server
+            const response = await fetch("http://localhost:8002/evaluate_rule", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    ast_node: { ruleString: ruleString },
+                    user_data: {
+                        age: Number(age),
+                        department: department,
+                        salary: Number(salary),
+                        experience: Number(experience),
+                    },
+                }),
+            });
+
+            // Check response status
+            if (!response.ok) {
+                console.error('Error:', response.statusText); // Log error response
+                document.getElementById("result").innerText = "Error: " + response.statusText;
+                return;
+            }
+
+            // Get the result and display it
+            const result = await response.json();
+            console.log('Result from server:', result); // Log the result for debugging
+            document.getElementById("result").innerText = result.eligible ? "Eligible" : "Not Eligible";
+        });
+    </script>
+</body>
+</html>
